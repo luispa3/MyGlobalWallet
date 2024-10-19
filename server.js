@@ -1,9 +1,11 @@
 const express = require('express');
-const { getUsers, getUserByEmail, getUsersByCountry } = require('./Controllers/UserController');
+const { getUsers, getUserByEmail, getUsersByCountry, isValidUser } = require('./Controllers/UserController');
 const {getSharesByUserID } = require('./Controllers/SharesController');
 
 const app = express();
 app.use(express.json());
+const cors = require('cors');
+app.use(cors());
 
 // Ruta para obtener todos los usuarios
 app.get('/users/get', async (req, res) => {
@@ -63,8 +65,28 @@ app.get('/shares/get/user/:userID', async (req, res) => {
     }
 });
 
+// Ruta para saber si el usuario introducido es válido o no.
+app.post('/users/isValidUser/', async (req, res) => {
+    const { user, password } = req.body;
 
-
+    try {
+        const result = await isValidUser(user, password);
+        if (result.status === 'OK') { // Cambiado para usar 'status' en lugar de 'success'
+            res.json({ 
+                success: true, 
+                message: result.message, // Mensaje devuelto desde el controlador
+                data: result.data // Datos del usuario devueltos desde el controlador
+            });
+        } else {
+            res.status(401).json({ 
+                success: false, 
+                message: result.message // Mensaje devuelto desde el controlador
+            });
+        }
+    } catch (err) {
+        res.status(500).json({ error: 'Error al validar el usuario' });
+    }
+});
 
 
 

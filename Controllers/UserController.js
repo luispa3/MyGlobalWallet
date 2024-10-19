@@ -43,4 +43,37 @@ async function getUsersByCountry(country) {
     }
 }
 
-module.exports = { getUsers, getUserByEmail, getUsersByCountry };
+// Función para saber si el usuario es válido o no.
+async function isValidUser(user, password) {
+    try {
+        const pool = await connectToDB();
+        const result = await pool.request()
+            .input('user', user)
+            .input('password', password)
+            .execute('isValidUser');
+
+        const userExists = result.recordset;
+
+        if (userExists.length === 1) {
+            return {
+                status: 'OK',
+                data: {
+                    userID: userExists[0].ID,
+                    userName: userExists[0].User, 
+                    email: userExists[0].Email
+                },
+                message: 'Valid user'
+            };
+        } else {
+            return {
+                status: 'BadRequest',
+                message: 'Invalid username, email or password'
+            };
+        }
+    } catch (err) {
+        console.error('Error validating user: '+user, err);
+        throw err;
+    }
+}
+
+module.exports = { getUsers, getUserByEmail, getUsersByCountry, isValidUser };
