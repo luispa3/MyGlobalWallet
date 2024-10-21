@@ -1,10 +1,12 @@
 const express = require('express');
 const { getUsers, getUserByEmail, getUsersByCountry, isValidUser } = require('./Controllers/UserController');
 const {getSharesByUserID } = require('./Controllers/SharesController');
+const { EtoroUserLogin } = require('./Controllers/EtoroController');
 
 const app = express();
 app.use(express.json());
 const cors = require('cors');
+const { EtoroUserLOgin } = require('./Controllers/EtoroController');
 app.use(cors());
 
 // Ruta para obtener todos los usuarios
@@ -88,6 +90,22 @@ app.post('/users/isValidUser/', async (req, res) => {
     }
 });
 
+
+//Ruta para hacer login en la app de ETORO
+app.post('/etoro/login/', async (req, res) => {
+    const {user, password} = req.body;
+    console.log(app)
+    try{
+        const result = await EtoroUserLogin(user, password);
+        if (result) {
+            console.log('ok');
+        } else {
+            console.log('error');
+        }
+    } catch (err) {
+        res.status(500).json({ error: 'Error al validar el usuario' });
+    }
+});
 
 
 
