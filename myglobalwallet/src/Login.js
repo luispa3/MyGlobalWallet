@@ -12,15 +12,35 @@ const Login = () => {
     e.preventDefault(); // Evita el comportamiento por defecto de recargar la página
     try {
       console.log(user+"///"+password);
-      const response = await axios.post('http://localhost:3000/users/isValidUser', { user, password });
+      const responseLogin = await axios.post('http://localhost:3000/etoro/isValidUser', { user, password });
       
-      if (response.data.success) {
-        sessionStorage.setItem('profile', JSON.stringify(response.data.data));
-        navigate('/dashboard');
-    } else {
-        setErrorMessage(response.data.message);
-    }
+      if (responseLogin.data.success) {
+        console.log(responseLogin.data);
+        console.log(responseLogin.data.data.token);
+        console.log(responseLogin.data.data.token.jwt)
+        sessionStorage.setItem("TokenLogin",responseLogin.data.data.token.jwt);
+        sessionStorage.setItem("TokenLoginExpires", responseLogin.data.data.token.expiresInMs);
+        sessionStorage.setItem("TokenOTP",responseLogin.data.data.twoFactor.otp.userOtpId);
+        sessionStorage.setItem("TokenOTPExpires",responseLogin.data.data.twoFactor.otp.expiresInMs);
+      } else {
+        setErrorMessage(responseLogin.data.message);
+      }
+      const jwt = sessionStorage.getItem("TokenLogin");
+      const otpId = sessionStorage.getItem("TokenOTP");
+      const otpNumber = sessionStorage.getItem("OtpNumber");
+
+      const responseOTP = await axios.post('http://localhost:3000/etoro/isValidOTP', {jwt, otpId, otpNumber});
+
+      if(responseOTP.data.success)
+      console.log(responseOTP.data);
+      console.log(responseOTP.data.data.token);
+      console.log(responseOTP.data.data.token.jwt)
+      sessionStorage.setItem("TokenOTPjwt",responseOTP.data.data.token.jwt);
+      sessionStorage.setItem("TokenOTPExpires", responseOTP.data.data.token.expiresInMs);
+
+      navigate('/dashboard');
     } catch (error) {
+      console.log(error);
       setErrorMessage('Error logging in. Please try again.');
     }
   };

@@ -2,32 +2,63 @@ const axios = require('axios');
 const { v4: uuidv4 } = require('uuid');
 const config = require('./../config');
 
-// Función para hacer la solicitud al endpoint
+// Función login usuario para obtener otpid
 async function EtoroUserLogin(username, password) {
-    try {
-      // Definir el URL del endpoint
-      const guid = uuidv4();
-      const url = `${config.etoro.url}${guid}`;
-      console.log(url);
-      // Definir las cabeceras personalizadas
-      const headers = config.etoro.headersLogin;
+  try {
+    const guid = uuidv4();
+    const url = `${config.etoro.loginUrl}${guid}`;
+    console.log(url);
+    const headers = config.etoro.headersLogin;
 
-      // Cuerpo de la solicitud
-      const data = {
-          loginIdentifier: username,
-          password: password,
-          requestedScopes: [],
-          isTemporalDevice: false,
-          deviceTokens: null
-      };
 
-      const response = await axios.post(url, data, { headers });
-      console.log('Respuesta del servidor:', response.data);
-      return true;
-    } catch (error) {
-        console.error('Error realizando la solicitud:', error.message);
-        return false;
-    }
+    const data = {
+        loginIdentifier: username,
+        password: password,
+        requestedScopes: [],
+        isTemporalDevice: false,
+        deviceTokens: null
+    };
+
+    const response = await axios.post(url, data, { headers });
+    return {
+      status: 'OK',
+      data: response.data,
+      message: 'Valid user'
+  };
+
+  } catch (error) {
+      console.log(error);
+      return false;
   }
+}
 
-module.exports = { EtoroUserLogin };
+async function EtoroOTPLogin(jwt, OTPId, OTPnumber) {
+  try {
+    const guid = uuidv4();
+    const url = `${config.etoro.loginOTPUrl}${guid}`;
+    console.log(url);
+    const headers = config.etoro.headerLoginOTP;
+    headers['Authorization'] = jwt;
+
+    
+    const data = {
+      userOTPId: OTPId,
+      otp: OTPnumber,
+      requestedScopes: []
+    };
+    
+    const response = await axios.post(url, data, {headers});
+    return {
+      status: 'OK',
+      data: response.data,
+      message: 'Valid OTPNumber'
+    };
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+}
+
+
+
+module.exports = { EtoroUserLogin, EtoroOTPLogin };

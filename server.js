@@ -1,7 +1,7 @@
 const express = require('express');
 const { getUsers, getUserByEmail, getUsersByCountry, isValidUser } = require('./Controllers/UserController');
 const {getSharesByUserID } = require('./Controllers/SharesController');
-const { EtoroUserLogin } = require('./Controllers/EtoroController');
+const { EtoroUserLogin, EtoroOTPLogin } = require('./Controllers/EtoroController');
 
 const app = express();
 app.use(express.json());
@@ -92,11 +92,33 @@ app.post('/users/isValidUser/', async (req, res) => {
 
 
 //Ruta para hacer login en la app de ETORO
-app.post('/etoro/login/', async (req, res) => {
+app.post('/etoro/isValidUser/', async (req, res) => {
     const {user, password} = req.body;
-    console.log(app)
     try{
         const result = await EtoroUserLogin(user, password);
+        res.json({ 
+            success: true, // Mensaje devuelto desde el controlador
+            data: result.data // Datos del usuario devueltos desde el controlador
+        });
+        if (result) {
+            console.log('ok');
+        } else {
+            console.log('error');
+        }
+    } catch (err) {
+        res.status(500).json({ error: 'Error al validar el usuario' });
+    }
+});
+
+//Ruta para validar el OTP en la app de ETORO
+app.post('/etoro/isValidOTP/', async (req, res) => {
+    const {jwt,otpId, otpNumber} = req.body;
+    try{
+        const result = await EtoroOTPLogin(jwt,otpId,otpNumber);
+        res.json({ 
+            success: true, // Mensaje devuelto desde el controlador
+            data: result.data // Datos del usuario devueltos desde el controlador
+        });
         if (result) {
             console.log('ok');
         } else {
